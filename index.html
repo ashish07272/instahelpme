@@ -1,28 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Insta Help Me</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Retailer Wise SIM Sale</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    h2 {
+      text-align: center;
+    }
+    input[type="file"], input[type="date"] {
+      display: block;
+      margin: 10px auto;
+    }
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Welcome to Insta Help Me</h1>
-    <p>This is a practice project to learn HTML and hosting.</p>
-  </header>
-  <main>
-    <section>
-      <h2>Why This Site?</h2>
-      <p>Because I'm learning web development step by step!</p>
-    </section>
-    <section>
-      <h2>Contact</h2>
-      <p>Email: example@email.com</p>
-    </section>
-  </main>
-  <footer>
-    <p>© 2025 Insta Help Me | Made with 💻</p>
-  </footer>
+
+  <h2>Retailer Wise SIM Sale Report</h2>
+  <input type="file" id="upload" accept=".xlsx, .xls" />
+  <label for="dateFilter" style="text-align:center; display:block;">Select Date:</label>
+  <input type="date" id="dateFilter" />
+
+  <table id="resultTable">
+    <thead>
+      <tr>
+        <th>Retailer Name</th>
+        <th>MNP Count</th>
+        <th>SIM Replacement Count</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let rawData = [];
+
+    document.getElementById('upload').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        rawData = XLSX.utils.sheet_to_json(sheet);
+        displayData();
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('dateFilter').addEventListener('change', displayData);
+
+    function displayData() {
+      const dateFilter = document.getElementById('dateFilter').value;
+      const countMap = {};
+
+      rawData.forEach(row => {
+        const retailer = row['Retailer Name'] || 'Unknown';
+        const type = (row['Type of CAF'] || '').toUpperCase();
+        const date = row['Date'] ? new Date(row['Date']).toISOString().split('T')[0] : null;
+
+        if (!dateFilter || date === dateFilter) {
+          if (!countMap[retailer]) {
+            countMap[retailer] = { MNP: 0, SIM_REPLACEMENT: 0 };
+          }
+
+          if (type.includes('MNP')) {
+            countMap[retailer].MNP += 1;
+          } else if (type.includes('SIM REPLACEMENT')) {
+            countMap[retailer].SIM_REPLACEMENT += 1;
+          }
+        }
+      });
+
+      const tbody = document.querySelector('#resultTable tbody');
+      tbody.innerHTML = '';
+
+      Object.entries(countMap).forEach(([name, counts]) => {
+        const row = `<tr><td>${name}</td><td>${counts.MNP}</td><td>${counts.SIM_REPLACEMENT}</td></tr>`;
+        tbody.insertAdjacentHTML('beforeend', row);
+      });
+    }
+  </script>
 </body>
 </html>
