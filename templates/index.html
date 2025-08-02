@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retailer Wise SIM Sale</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { border-collapse: collapse; width: 50%; margin: auto; }
+        th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        h2 { text-align: center; }
+    </style>
+</head>
+<body>
+    <h2>Retailer Wise SIM Sale Report</h2>
+    <table>
+        <tr>
+            <th>Retailer Name</th>
+            <th>SIM Sale Count</th>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td>{{ row['Retailer Name'] }}</td>
+            <td>{{ row['SIM Sale Count'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
